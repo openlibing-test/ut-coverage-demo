@@ -1,0 +1,40 @@
+name: UT Coverage
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write # 必需：OIDC 换取华为云临时凭证
+
+jobs:
+  test:
+    name: Test with coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run tests with coverage
+        run: |
+          coverage run -m pytest -q
+          coverage json
+
+      - name: Upload UT coverage
+        uses: openlibing-test/upload-ut-action@v1.0.2
+        with:
+          report_path: ./coverage.json
